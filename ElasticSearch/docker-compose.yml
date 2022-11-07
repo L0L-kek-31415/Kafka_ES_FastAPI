@@ -1,0 +1,28 @@
+version: "3.10"
+services:
+  es:
+    image: elasticsearch:7.17.0
+    environment:
+      - cluster.routing.allocation.disk.watermark.low=94%
+      - cluster.routing.allocation.disk.watermark.high=95%
+      - node.name=trademark_search
+      - cluster.name=es-docker-cluster
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - ELASTIC_PASSWORD=changeme
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - ./data/es:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+  app-elasticsearch:
+    build: .
+    ports:
+      - "8088:8088"
+    depends_on:
+      - es
