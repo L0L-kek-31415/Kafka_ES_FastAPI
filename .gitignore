@@ -1,4 +1,4 @@
 /*/.idea/
-/FastAPI/postgres_data/
-/ElasticSearch/data/
-/FastAPI/app/.env
+/fastapi/postgres_data/
+/elastic_search/data/
+/fastapi/app/.env
