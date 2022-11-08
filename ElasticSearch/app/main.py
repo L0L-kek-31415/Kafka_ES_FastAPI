@@ -1,39 +1,28 @@
-import json
 from typing import List
-
-from elasticsearch import Elasticsearch
 from fastapi import FastAPI, BackgroundTasks
 from fastapi.responses import JSONResponse, Response
 
-from app.producer import publish
 from app.schemas import Item
+from app.services import ElasticService
 
-es = Elasticsearch("http://es:9200")
+from app.producer import ProducerKafka
+
 app = FastAPI()
-
-
-def create_item(item: Item, index):
-    return es.index(index=index, body=item.dict())
-
-
-def search_by_words(description, index):
-    result = es.search(
-        index=index, body={"query": {"match": {"description": description}}}
-    )
-    return result
+es = ElasticService()
+producer = ProducerKafka('app', ["localhost:29093", "kafka:29092"])
 
 
 @app.post("/search/{description}/")
-async def root(description):
-    BackgroundTasks.add_task(publish, method="create", body={"phrase": description})
-    result = search_by_words(description, "lolkek")
+async def root(description, background_task: BackgroundTasks):
+    background_task.add_task(producer.publish, method="create", body={"phrase": description})
+    result = es.search_by_words(description, "lolkek")
     hits = result.get("hits", {}).get("hits", [])
     return {
         "results": [hit.get("_source") for hit in hits]
     }
 
 
-@app.post("/hello/", response_model=List[Item])
+@app.post("/create_item/", response_model=List[Item])
 async def say_hello(item: Item):
-    result = create_item(item, "lolkek")
+    es.create_item(item, "lolkek")
     return Response(status_code=200)

@@ -20,9 +20,16 @@ services:
     ports:
       - "9200:9200"
       - "9300:9300"
+    networks:
+      - common_network
   app-elasticsearch:
     build: .
     ports:
       - "8088:8088"
     depends_on:
       - es
+    networks:
+      - common_network
+networks:
+  common_network:
+    external: true

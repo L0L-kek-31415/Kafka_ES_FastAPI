@@ -9,6 +9,7 @@ uvicorn = {extras = ["standard"], version = "*"}
 motor = "*"
 pykafka = "*"
 aiokafka = "*"
+nest-asyncio = "*"
 
 [dev-packages]
 
