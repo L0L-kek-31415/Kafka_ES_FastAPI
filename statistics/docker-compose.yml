@@ -1,0 +1,58 @@
+version: "3.10"
+services:
+  mongodb:
+    image: mongo
+    ports:
+      - 27017:27017
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=root
+    networks:
+      - common_network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ALLOW_ANONYMOUS_LOGIN=yes
+
+    ports:
+      - 2181:2181
+    networks:
+      - kafka_network
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+      - 29093:29093
+    expose:
+      - 29093
+
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_LISTENERS: INSIDE://0.0.0.0:29092,OUTSIDE://0.0.0.0:29093
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://kafka:29092,OUTSIDE://localhost:29093
+    networks:
+      - common_network
+      - kafka_network
+  app-elasticsearch:
+    build: .
+    ports:
+      - "8018:8018"
+    environment:
+      HOST: kafka
+    depends_on:
+      - mongodb
+      - kafka
+    networks:
+      - common_network
+
+networks:
+  common_network:
+    name: common_network
+  kafka_network:
+    name: kafka_docker_example_net

@@ -1,1 +1,4 @@
-/ElasticSearch/.idea/
+/*/.idea/
+/fastapi/postgres_data/
+/elastic_search/data/
+/fastapi/app/.env
